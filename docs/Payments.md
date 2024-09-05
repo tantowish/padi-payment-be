@@ -99,7 +99,7 @@ Response Body (Failed):
 
 ```
 {
-	"success": false,
+	"status": "error",
 	"message": "failed to get payments"
 }
 ```
@@ -107,6 +107,9 @@ Response Body (Failed):
 ### Get Payments Recommendation / Suggestion
 
 Endpoint: GET /api/v1/payments/suggest
+
+Header :
+	Authorization: Bearer access_token
 
 Response Body (Success):
 
@@ -129,7 +132,16 @@ Response Body (Failed):
 
 ```
 {
-	"success": false,
+	"status": "error",
 	"message": "failed to get payment suggestion"
+}
+```
+
+Response Body (No Transaction Found):
+
+```
+{
+	"success": "info",
+	"message": "No frequent payment found"
 }
 ```

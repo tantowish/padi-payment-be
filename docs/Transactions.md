@@ -4,6 +4,9 @@
 
 Endpoint: POST /api/v1/transactions
 
+Header :
+	Authorization: Bearer access_token
+
 Request Body:
 
 ```
@@ -36,7 +39,7 @@ Response Body (Failed):
 
 ```
 {
-	"success": false,
+	"status": "error",
 	"message": "failed to make transaction"
 }
 ```
@@ -44,6 +47,9 @@ Response Body (Failed):
 ### Complete Transactions
 
 Endpoint: POST /api/v1/transactions/:transaction_id/complete
+
+Header :
+	Authorization: Bearer access_token
 
 Response Body (Success):
 
@@ -67,7 +73,7 @@ Response Body (Failed):
 
 ```
 {
-	"success": false,
+	"status": "error",
 	"message": "failed to complete transaction"
 }
 ```
