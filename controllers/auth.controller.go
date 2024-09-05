@@ -30,11 +30,6 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 
-	if payload.Password != payload.PasswordConfirm {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Passwords do not match"})
-		return
-	}
-
 	hashedPassword, err := utils.HashPassword(payload.Password)
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
@@ -46,10 +41,6 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		Name:      payload.Name,
 		Email:     strings.ToLower(payload.Email),
 		Password:  hashedPassword,
-		Role:      "user",
-		Verified:  true,
-		Photo:     payload.Photo,
-		Provider:  "local",
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -68,13 +59,10 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		ID:        newUser.ID,
 		Name:      newUser.Name,
 		Email:     newUser.Email,
-		Photo:     newUser.Photo,
-		Role:      newUser.Role,
-		Provider:  newUser.Provider,
 		CreatedAt: newUser.CreatedAt,
 		UpdatedAt: newUser.UpdatedAt,
 	}
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"user": userResponse}})
+	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": userResponse})
 }
 
 func (ac *AuthController) SignInUser(ctx *gin.Context) {

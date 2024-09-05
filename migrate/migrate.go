@@ -19,6 +19,15 @@ func init() {
 
 func main() {
 	initializers.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
-	initializers.DB.AutoMigrate(&models.User{}, &models.Post{})
+	initializers.DB.Exec(`
+		DO $$
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'transaction_status') THEN
+				CREATE TYPE transaction_status AS ENUM ('PAID', 'CANCEL', 'PENDING');
+			END IF;
+		END
+		$$;
+	`)
+	initializers.DB.AutoMigrate(&models.User{}, &models.PaymentCategory{}, &models.Payment{}, &models.Transaction{})
 	fmt.Println("👍 Migration complete")
 }
