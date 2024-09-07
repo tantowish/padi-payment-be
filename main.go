@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	server              *gin.Engine
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
@@ -51,9 +50,8 @@ func init() {
 
 	TransactionController = controllers.NewTransactionController(initializers.DB)
 	TransactionRouteController = routes.NewRouteTransactionController(TransactionController)
-
-	server = gin.Default()
 }
+
 
 func main() {
 	config, err := initializers.LoadConfig(".")
@@ -61,10 +59,24 @@ func main() {
 		log.Fatal("🚀 Could not load environment variables", err)
 	}
 
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:8000", config.ClientOrigin}
-	corsConfig.AllowCredentials = true
+	// corsConfig := cors.DefaultConfig()
+	// corsConfig.AllowOrigins = []string{"http://localhost:3000", config.ClientOrigin}
+	// corsConfig.AllowCredentials = true
 
+	server := gin.Default()
+	// Custom CORS configuration
+	corsConfig := cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", config.ClientOrigin}, // Replace config.ClientOrigin with the actual allowed client origin
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},              // Specify allowed methods
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},   // Specify allowed headers
+		ExposeHeaders:    []string{"Content-Length"},                            // Specify which headers are exposed to the client
+		AllowCredentials: true,                                                  // Allow credentials like cookies
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "http://localhost:3000" || origin == config.ClientOrigin
+		},
+	}
+
+	// Apply CORS middleware
 	server.Use(cors.New(corsConfig))
 
 	router := server.Group("/api/v1")
@@ -78,5 +90,6 @@ func main() {
 	PostRouteController.PostRoute(router)
 	PaymentRouteController.PaymentRoute(router)
 	TransactionRouteController.TransactionRoute(router)
+
 	log.Fatal(server.Run(":" + config.ServerPort))
 }

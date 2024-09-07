@@ -19,6 +19,7 @@ func (tc *TransactionRouteController) TransactionRoute(rg *gin.RouterGroup) {
 	router := rg.Group("transactions")
 	router.Use(middleware.DeserializeUser())
 	router.POST("/", tc.transactionController.Create)
+	router.POST("/create", tc.transactionController.Create)
 	router.PUT("/:id/complete", tc.transactionController.Update)
 	router.GET("/:id", tc.transactionController.Get)
 }

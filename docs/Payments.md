@@ -119,6 +119,7 @@ Response Body (Success):
 	"message": "payment suggestion",
 	"data": {
 		"id": "20",
+		"category_id": 1,
 		"payment_name": "BCA CC",
 		"logo": "padi-umkmk/bca-logo.png",
 		"note": NULL,
