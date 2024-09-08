@@ -21,6 +21,7 @@ type Transaction struct {
 	GrossAmount uint              `gorm:"not null" json:"gross_amount"`
 	NoPayment   string            `gorm:"default: null" json:"no_payment"`
 	Status      TransactionStatus `gorm:"type:transaction_status;default:'PENDING'" json:"status"`
+	ExpireAt    time.Time         `gorm:"not null" json:"expire_at,omitempty"`
 	CreatedAt   time.Time         `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt   time.Time         `gorm:"not null" json:"updated_at,omitempty"`
 
@@ -40,6 +41,7 @@ type TransactionResponse struct {
 	GrossAmount uint              `json:"gross_amount"`
 	NoPayment   string            `json:"no_payment"`
 	Status      TransactionStatus `json:"status"`
+	ExpireAt    time.Time         `json:"expire_at"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
 }
@@ -51,6 +53,7 @@ type TransactionDetailResponse struct {
 	GrossAmount uint              `json:"gross_amount"`
 	NoPayment   string            `json:"no_payment"`
 	Status      TransactionStatus `json:"status"`
+	ExpireAt    time.Time         `json:"expire_at"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
 	User        UserResponse      `json:"user"`

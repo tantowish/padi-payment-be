@@ -18,7 +18,9 @@ func NewPaymentController(DB *gorm.DB) PaymentController {
 
 func (pc *PaymentController) GetList(ctx *gin.Context) {
 	var paymentCategories []*models.PaymentCategory
-	if err := pc.DB.Preload("Payments").Find(&paymentCategories).Error; err != nil {
+	if err := pc.DB.Preload("Payments", func(db *gorm.DB) *gorm.DB {
+		return db.Order("id ASC")
+	}).Find(&paymentCategories).Error; err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
@@ -27,6 +29,8 @@ func (pc *PaymentController) GetList(ctx *gin.Context) {
 }
 
 func (pc *PaymentController) GetSuggestion(ctx *gin.Context) {
+	currentUser := ctx.MustGet("currentUser").(models.User)
+
 	type FrequentPayment struct {
 		PaymentID uint
 	}
@@ -37,6 +41,7 @@ func (pc *PaymentController) GetSuggestion(ctx *gin.Context) {
 		WITH recent_transactions AS (
 			SELECT payment_id, created_at
 			FROM transactions
+			WHERE user_id = ?
 			ORDER BY created_at DESC
 			LIMIT 10
 		),
@@ -51,7 +56,7 @@ func (pc *PaymentController) GetSuggestion(ctx *gin.Context) {
 		LIMIT 1;
 	`
 
-	if err := pc.DB.Raw(query).Scan(&frequentPayment).Error; err != nil {
+	if err := pc.DB.Raw(query, currentUser.ID).Scan(&frequentPayment).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Failed to retrieve frequent payment ID"})
 		return
 	}

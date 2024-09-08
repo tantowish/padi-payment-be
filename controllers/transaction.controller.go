@@ -29,6 +29,12 @@ func (pc *TransactionController) Create(ctx *gin.Context) {
 		return
 	}
 
+	var payment models.Payment
+	if err := pc.DB.First(&payment, "id = ?", payload.PaymentID).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Payment not found"})
+		return
+	}
+
 	combinedPaymentNumber := fmt.Sprintf("%d%d", payload.PaymentID, utils.GenerateRandomNumber())
 
 	now := time.Now()
@@ -38,6 +44,7 @@ func (pc *TransactionController) Create(ctx *gin.Context) {
 		GrossAmount: payload.GrossAmount,
 		NoPayment:   combinedPaymentNumber,
 		Status:      models.PENDING,
+		ExpireAt:    now.Add(time.Duration(payment.Expire) * time.Minute),
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
@@ -55,6 +62,7 @@ func (pc *TransactionController) Create(ctx *gin.Context) {
 		GrossAmount: newTransaction.GrossAmount,
 		NoPayment:   newTransaction.NoPayment,
 		Status:      newTransaction.Status,
+		ExpireAt:    newTransaction.ExpireAt,
 		CreatedAt:   newTransaction.CreatedAt,
 		UpdatedAt:   newTransaction.UpdatedAt,
 	}
@@ -63,6 +71,7 @@ func (pc *TransactionController) Create(ctx *gin.Context) {
 }
 
 func (tc *TransactionController) Get(ctx *gin.Context) {
+	currentUser := ctx.MustGet("currentUser").(models.User)
 	id := ctx.Param("id")
 
 	var transaction models.Transaction
@@ -72,8 +81,9 @@ func (tc *TransactionController) Get(ctx *gin.Context) {
 		return
 	}
 
-	if err := tc.DB.Preload("Payment").Preload("User").First(&transaction, "id = ?", uuidID).Error; err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": err.Error()})
+	if err := tc.DB.Preload("Payment").Preload("User").
+		First(&transaction, "id = ? AND user_id = ?", uuidID, currentUser.ID).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Transaction not found"})
 		return
 	}
 
@@ -84,6 +94,7 @@ func (tc *TransactionController) Get(ctx *gin.Context) {
 		GrossAmount: transaction.GrossAmount,
 		NoPayment:   transaction.NoPayment,
 		Status:      transaction.Status,
+		ExpireAt:    transaction.ExpireAt,
 		CreatedAt:   transaction.CreatedAt,
 		UpdatedAt:   transaction.UpdatedAt,
 		User: models.UserResponse{
@@ -100,6 +111,7 @@ func (tc *TransactionController) Get(ctx *gin.Context) {
 }
 
 func (tc *TransactionController) Update(ctx *gin.Context) {
+	currentUser := ctx.MustGet("currentUser").(models.User)
 	id := ctx.Param("id")
 
 	var transaction models.Transaction
@@ -109,8 +121,8 @@ func (tc *TransactionController) Update(ctx *gin.Context) {
 		return
 	}
 
-	if err := tc.DB.First(&transaction, "id = ?", uuidID).Error; err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": err.Error()})
+	if err := tc.DB.First(&transaction, "id = ? AND user_id = ?", uuidID, currentUser.ID).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Transaction not found"})
 		return
 	}
 
@@ -129,6 +141,7 @@ func (tc *TransactionController) Update(ctx *gin.Context) {
 		GrossAmount: transaction.GrossAmount,
 		NoPayment:   transaction.NoPayment,
 		Status:      transaction.Status,
+		ExpireAt:    transaction.ExpireAt,
 		CreatedAt:   transaction.CreatedAt,
 		UpdatedAt:   transaction.UpdatedAt,
 	}

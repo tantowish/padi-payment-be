@@ -8,8 +8,9 @@ type Payment struct {
 	PaymentName string    `gorm:"not null" json:"payment_name"`
 	Logo        string    `gorm:"not null" json:"logo"`
 	Note        string    `gorm:"default:null" json:"note"`
+	Expire      uint      `gorm:"default:1440" json:"expire"`
 	CreatedAt   time.Time `gorm:"not null" json:"created_at,omitempty"`
 	UpdatedAt   time.Time `gorm:"not null" json:"updated_at,omitempty"`
 
-	Transactions []Transaction   `gorm:"foreignKey:PaymentID" json:"transactions,omitempty"`
+	Transactions []Transaction `gorm:"foreignKey:PaymentID" json:"transactions,omitempty"`
 }

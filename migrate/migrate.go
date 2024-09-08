@@ -28,6 +28,8 @@ func main() {
 		END
 		$$;
 	`)
-	initializers.DB.AutoMigrate(&models.User{}, &models.PaymentCategory{}, &models.Payment{}, &models.Transaction{})
+	if err := initializers.DB.AutoMigrate(&models.User{}, &models.PaymentCategory{}, &models.Payment{}, &models.Transaction{}); err != nil {
+		log.Fatal("Error during migration: ", err)
+	}	
 	fmt.Println("👍 Migration complete")
 }
